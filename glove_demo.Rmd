@@ -1,12 +1,24 @@
-This document describes a test of implementing the word embedding-based measures of the Schwartz Values taxonomy of personal values, using a pre-trained word embedding model (GloVe), and validating the vector representations using a subsample of a corpus of news headlines.
+---
+title: "Annotating texts with GloVe"
+output: html_notebook
+author: "Damien Crone"
+---
+ 
+This document describes a test of implementing the word embedding-based measures to describe the semantic content of texts (essentially using a distributed dictionary approach; Garten et al. 2018). Specifically, we use semantic representations of the Schwartz Values taxonomy of personal values, using a pre-trained word embedding model (GloVe), and validating the vector representations using a subsample of a corpus of news headlines.
 
 # How to use this document
 
 To make the document more readable (if you don't want to dig through code), in the top-right corner, you can click on _**Code**_, and select _**Hide All Code**_, and just limit the displayed content to any outputs and descriptive text.
 
+To run the code, you will need:
+
+1. The `embeddingtools` library, available from GitHub (code to download it is included below and commented out)
+2. A pre-trained word embedding model (e.g., GloVe, available from available from https://nlp.stanford.edu/projects/glove/)
+3. The validation dataset, *A Million News Headlines* (Kulkarni, 2017), available from https://www.kaggle.com/therohk/million-headlines/
+
 # Loading a model
 
-The `loadModel()` function loads a pre-trained word embedding model as a matrix with words as rows, and dimensions as columns. The specific model used here is a `r ncol(glove)`-dimensional GloVe model available from https://nlp.stanford.edu/projects/glove/.
+The `loadModel()` function loads a pre-trained word embedding model as a matrix with words as rows, and dimensions as columns. The specific model used here is a `r ncol(glove)`-dimensional GloVe model.
 
 ```{r}
 
@@ -19,6 +31,8 @@ library(embeddingtools)
 max_vocab_size = 250000
 
 # Model obtained from http://nlp.stanford.edu/data/glove.42B.300d.zip
+# Note to reduce resource demands, you may wish to use a model with lower
+# dimensionality and/or reduce the vocabulary size.
 glove = loadModel(
   file = "~/Desktop/glove_models/glove.6B.300d.txt",
   max_vocab_size = max_vocab_size
@@ -53,7 +67,7 @@ schwartz_vec = computeConceptRepresentation(model = glove, term_set = schwartz_d
 
 # Validation data
 
-To test the ability of the concept repesentations to describe the semantic content of texts, we computed the semantic similarity of each concept vector the the vector representations of texts in a corpus of news headlines (Kulkarni, 2017).
+To test the ability of the concept repesentations to describe the semantic content of texts, we computed the semantic similarity of each concept vector the the vector representations of texts in a corpus of over one million news headlines from the Australian Broadcasting Corporation (Kulkarni, 2017). For simplicity, we limit our analyses to a random sample or `r n_articles_to_sample` headlines.
 
 ```{r}
 
@@ -71,7 +85,7 @@ news_dat$word_count = stringr::str_count(
 # Remove texts with fewer than 4 words
 news_dat = news_dat[news_dat$word_count >= 4,]
 
-# For simplicity, limit data to 10,000 observations
+# For simplicity, sample the validation dataset
 set.seed(1234)
 n_articles_to_sample = 10000
 sample_ind = sample(x = 1:nrow(news_dat), size = n_articles_to_sample)
@@ -114,7 +128,9 @@ for (concept_name in colnames(news_schwartz)) {
 
 ```
 
-# Refernces
+# References
 Bardi, A., Calogero, R. M., & Mullen, B. (2008). A new archival approach to the study of values and value--behavior relations: Validation of the value lexicon. Journal of Applied Psychology, 93(3), 483–497. http://doi.org/10.1037/0021-9010.93.3.483
+
+Garten, J., Hoover, J., Johnson, K. M., Boghrati, R., Iskiwitch, C., & Dehghani, M. (2018). Dictionaries and distributions: Combining expert knowledge and large scale textual data content analysis. Behavior Research Methods, 50(1), 344–361. http://doi.org/10.3758/s13428-017-0875-9
 
 Kulkarni, R. (2017). A Million News Headlines. http://doi.org/10.7910/DVN/SYBGZL. Retrieved from: https://www.kaggle.com/therohk/million-headlines/
