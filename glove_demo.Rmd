@@ -97,22 +97,24 @@ Below are the 5 article headlines with the highest semantic similarity to each p
 
 ```{r}
 
+concept_string = ""
+
 for (concept_name in colnames(news_schwartz)) {
   
   top_ind = order(news_schwartz[, concept_name], decreasing = TRUE)[1:5]
   top_headlines = news_dat$headline_text[top_ind]
   
-  cat(
-    paste0(
-      "Concept: ", concept_name, "\n",
-      paste0("\t", top_headlines, collapse = "\n"),
-      "\n"
-    )
+  concept_string = paste0(
+    "Concept: ", concept_name, "\n",
+    paste0("\t", top_headlines, collapse = "\n"),
+    "\n"
   )
   
 }
 
 ```
+
+`cat(concept_string)`
 
 # Refernces
 Bardi, A., Calogero, R. M., & Mullen, B. (2008). A new archival approach to the study of values and value--behavior relations: Validation of the value lexicon. Journal of Applied Psychology, 93(3), 483–497. http://doi.org/10.1037/0021-9010.93.3.483
