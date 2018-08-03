@@ -18,6 +18,7 @@ library(embeddingtools)
 
 max_vocab_size = 250000
 
+# Model obtained from http://nlp.stanford.edu/data/glove.42B.300d.zip
 glove = loadModel(
   file = "~/Desktop/glove_models/glove.6B.300d.txt",
   max_vocab_size = max_vocab_size
@@ -56,12 +57,11 @@ To test the ability of the concept repesentations to describe the semantic conte
 
 ```{r}
 
+# Dataset obtained from https://www.kaggle.com/therohk/million-headlines/
 news_dat = read.csv(
   file = "~/Desktop/glove_models/abcnews-date-text.csv",
   stringsAsFactors = FALSE
 )
-# Dataset obtained from https://www.kaggle.com/therohk/million-headlines/
-
 
 news_dat$word_count = stringr::str_count(
   string = news_dat$headline_text,
@@ -97,24 +97,22 @@ Below are the 5 article headlines with the highest semantic similarity to each p
 
 ```{r}
 
-concept_string = ""
-
 for (concept_name in colnames(news_schwartz)) {
   
   top_ind = order(news_schwartz[, concept_name], decreasing = TRUE)[1:5]
   top_headlines = news_dat$headline_text[top_ind]
   
-  concept_string = paste0(
-    "Concept: ", concept_name, "\n",
-    paste0("\t", top_headlines, collapse = "\n"),
-    "\n"
+  cat(
+    paste0(
+      "Concept: ", concept_name, "\n",
+      paste0("\t", top_headlines, collapse = "\n"),
+      "\n"
+    )
   )
   
 }
 
 ```
-
-`r cat(concept_string)`
 
 # Refernces
 Bardi, A., Calogero, R. M., & Mullen, B. (2008). A new archival approach to the study of values and value--behavior relations: Validation of the value lexicon. Journal of Applied Psychology, 93(3), 483–497. http://doi.org/10.1037/0021-9010.93.3.483
