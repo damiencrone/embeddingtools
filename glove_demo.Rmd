@@ -27,13 +27,9 @@ glove = loadModel(
 
 # Constructing a dictionary
 
-Having loaded the word-embedding model, we can now construct vector representations of concepts of interest, using the `computeConceptRepresentation()` function. This can be done in one of two ways: First, as demonstrated here, one can create a list with one element for each concept in the dictionary, with each concept element containing a character vector of the words that will be used to define the concept. An assumption of the first approach is that each term is equally relevant to the concept. A second approach, allowing different terms to have different weights, is to input a table weights with terms in the rows and concepts in the columns[^1].
+Having loaded the word-embedding model, we can now construct vector representations of concepts of interest, using the `computeConceptRepresentation()` function. This can be done in one of two ways: First, as demonstrated here, one can create a list with one element for each concept in the dictionary, with each concept element containing a character vector of the words that will be used to define the concept. An assumption of the first approach is that each term is equally relevant to the concept. A second approach, allowing different terms to have different weights, is to input a table weights with terms in the rows and concepts in the columns. (A list provided as input will ultimately be converted to a table with all terms having equal weight.)
 
-To create a concept representation, the `computeConceptRepresentation()` function simply searches through the vocabulary and creates a (weighted) average of the vectors for each term. In this example, the representation for *Power* will be the average of the vectors for the terms "power", "strength", and "achievement". In this example, the terms for each value concept are taken form a previously validated lexicon[^2].
-
-[^1]:A list provided as input will ultimately be converted to a table with all terms having equal weight.
-
-[^2]:Bardi, A., Calogero, R. M., & Mullen, B. (2008). A new archival approach to the study of values and value--behavior relations: Validation of the value lexicon. Journal of Applied Psychology, 93(3), 483–497. http://doi.org/10.1037/0021-9010.93.3.483
+To create a concept representation, the `computeConceptRepresentation()` function simply searches through the vocabulary and creates a (weighted) average of the vectors for each term. In this example, the representation for *Power* will be the average of the vectors for the terms "power", "strength", and "achievement". In this example, the terms for each value concept are taken form a previously validated lexicon (Bardi, Calogero & Mullen, 2008).
 
 ```{r}
 
@@ -56,11 +52,7 @@ schwartz_vec = computeConceptRepresentation(model = glove, term_set = schwartz_d
 
 # Validation data
 
-To test the ability of the concept repesentations to describe the semantic content of texts, we computed the semantic similarity of each concept vector the the vector representations of texts in a corpus of news headlines[^3].
-
-[^3]:Kulkarni, R. (2017). A Million News Headlines,
-http://doi.org/10.7910/DVN/SYBGZL. Retrieved from:
-https://www.kaggle.com/therohk/million-headlines/
+To test the ability of the concept repesentations to describe the semantic content of texts, we computed the semantic similarity of each concept vector the the vector representations of texts in a corpus of news headlines (Kulkarni, 2017).
 
 ```{r}
 
@@ -122,3 +114,6 @@ for (concept_name in colnames(news_schwartz)) {
 
 ```
 
+# Refernces
+Bardi, A., Calogero, R. M., & Mullen, B. (2008). A new archival approach to the study of values and value--behavior relations: Validation of the value lexicon. Journal of Applied Psychology, 93(3), 483–497. http://doi.org/10.1037/0021-9010.93.3.483
+Kulkarni, R. (2017). A Million News Headlines. http://doi.org/10.7910/DVN/SYBGZL. Retrieved from: https://www.kaggle.com/therohk/million-headlines/
