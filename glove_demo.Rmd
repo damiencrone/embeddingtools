@@ -114,7 +114,7 @@ for (concept_name in colnames(news_schwartz)) {
 
 ```
 
-`cat(concept_string)`
+`r cat(concept_string)`
 
 # Refernces
 Bardi, A., Calogero, R. M., & Mullen, B. (2008). A new archival approach to the study of values and value--behavior relations: Validation of the value lexicon. Journal of Applied Psychology, 93(3), 483–497. http://doi.org/10.1037/0021-9010.93.3.483
