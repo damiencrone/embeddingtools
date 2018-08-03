@@ -1,0 +1,130 @@
+---
+title: "Annotating texts with GloVe"
+output: html_notebook
+author: "Damien Crone"
+---
+
+This document describes a test of implementing the word embedding-based measures of the Schwartz Values taxonomy of personal values, using a pre-trained word embedding model (GloVe), and validating the vector representations using a subsample of a corpus of news headlines.
+
+# How to use this document
+
+To make the document more readable (if you don't want to dig through code), in the top-right corner, you can click on _**Code**_, and select _**Hide All Code**_, and just limit the displayed content to any outputs and descriptive text.
+
+# Loading a model
+
+The `loadModel()` function loads a pre-trained word embedding model as a matrix with words as rows, and dimensions as columns. The specific model used here is a `r ncol(glove)`-dimensional GloVe model available from https://nlp.stanford.edu/projects/glove/.
+
+```{r}
+
+# Load embeddingtools library
+# install.packages("devtools")
+# library(devtools)
+# install_github("damiencrone/embeddingtools")
+library(embeddingtools)
+
+max_vocab_size = 250000
+
+glove = loadModel(
+  file = "~/Desktop/glove_models/glove.6B.300d.txt",
+  max_vocab_size = max_vocab_size
+)
+
+```
+
+# Constructing a dictionary
+
+Having loaded the word-embedding model, we can now construct vector representations of concepts of interest, using the `computeConceptRepresentation()` function. This can be done in one of two ways: First, as demonstrated here, one can create a list with one element for each concept in the dictionary, with each concept element containing a character vector of the words that will be used to define the concept. An assumption of the first approach is that each term is equally relevant to the concept. A second approach, allowing different terms to have different weights, is to input a table weights with terms in the rows and concepts in the columns[^1].
+
+To create a concept representation, the `computeConceptRepresentation()` function simply searches through the vocabulary and creates a (weighted) average of the vectors for each term. In this example, the representation for *Power* will be the average of the vectors for the terms "power", "strength", and "achievement". In this example, the terms for each value concept are taken form a previously validated lexicon[^2].
+
+[^1]:A list provided as input will ultimately be converted to a table with all terms having equal weight.
+
+[^2]:Bardi, A., Calogero, R. M., & Mullen, B. (2008). A new archival approach to the study of values and value--behavior relations: Validation of the value lexicon. Journal of Applied Psychology, 93(3), 483–497. http://doi.org/10.1037/0021-9010.93.3.483
+
+```{r}
+
+schwartz_dictionary_list = list(
+  `Power`          = c("power", "strength", "control"),
+  `Achievement`    = c("achievement", "ambition", "success"),
+  `Hedonism`       = c("luxury", "pleasure", "delight"),
+  `Stimulation`    = c("excitement", "novelty", "thrill"),
+  `Self direction` = c("independence", "freedom", "liberty"),
+  `Universalism`   = c("unity", "justice", "equality"),
+  `Benevolence`    = c("kindness", "charity", "mercy"),
+  `Tradition`      = c("tradition", "custom", "respect"),
+  `Conformity`     = c("restraint", "regard", "consideration"),
+  `Security`       = c("security", "safety", "protection")
+)
+
+schwartz_vec = computeConceptRepresentation(model = glove, term_set = schwartz_dictionary_list)
+
+```
+
+# Validation data
+
+To test the ability of the concept repesentations to describe the semantic content of texts, we computed the semantic similarity of each concept vector the the vector representations of texts in a corpus of news headlines[^3].
+
+[^3]:Kulkarni, R. (2017). A Million News Headlines,
+http://doi.org/10.7910/DVN/SYBGZL. Retrieved from:
+https://www.kaggle.com/therohk/million-headlines/
+
+```{r}
+
+news_dat = read.csv(
+  file = "~/Desktop/glove_models/abcnews-date-text.csv",
+  stringsAsFactors = FALSE
+)
+# Dataset obtained from https://www.kaggle.com/therohk/million-headlines/
+
+
+news_dat$word_count = stringr::str_count(
+  string = news_dat$headline_text,
+  pattern = "\\S+"
+)
+
+# Remove texts with fewer than 4 words
+news_dat = news_dat[news_dat$word_count >= 4,]
+
+# For simplicity, limit data to 10,000 observations
+set.seed(1234)
+n_articles_to_sample = 10000
+sample_ind = sample(x = 1:nrow(news_dat), size = n_articles_to_sample)
+news_dat = news_dat[sample_ind,]
+
+news_dat$headline_text_processed = removeWhiteSpace(
+  convertTextToGloveFormat(news_dat$headline_text)
+)
+
+news_vec = computeTextVectors(
+  text_vec = news_dat$headline_text_processed,
+  model = glove
+)
+
+news_schwartz = computeTextConceptSimilarity(
+  text_representation = news_vec,
+  concept_mat = schwartz_vec
+)
+
+```
+
+Below are the 5 article headlines with the highest semantic similarity to each personal value.
+
+```{r}
+
+for (concept_name in colnames(news_schwartz)) {
+  
+  top_ind = order(news_schwartz[, concept_name], decreasing = TRUE)[1:5]
+  top_headlines = news_dat$headline_text[top_ind]
+  
+  cat(
+    paste0(
+      "Concept: ", concept_name, "\n",
+      paste0("\t", top_headlines, collapse = "\n"),
+      "\n"
+    )
+  )
+  
+}
+
+```
+
