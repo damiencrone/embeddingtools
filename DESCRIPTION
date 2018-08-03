@@ -1,0 +1,10 @@
+Package: embeddingtools
+Title: A Package for Annotating Text Data With Pre-Trained Word Embedding Models
+Version: 0.0.0.9000
+Authors@R: person("Damien", "Crone", email = "damien.crone@gmail.com", role = c("aut", "cre"))
+Description: What the package does (one paragraph).
+Depends: R (>= 3.4.0), lsa
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.0
