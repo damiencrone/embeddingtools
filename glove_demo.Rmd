@@ -61,7 +61,10 @@ schwartz_dictionary_list = list(
   `Security`       = c("security", "safety", "protection")
 )
 
-schwartz_vec = computeConceptRepresentation(model = glove, term_set = schwartz_dictionary_list)
+schwartz_vec = computeConceptRepresentation(
+  model = glove,
+  term_set = schwartz_dictionary_list
+)
 
 ```
 

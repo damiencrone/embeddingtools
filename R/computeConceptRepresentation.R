@@ -10,7 +10,7 @@
 #' @return a concept by dimension matrix containing the vector representation of
 #'   each concept in the dictionary
 #' @export
-computeConceptRepresentation = function (model, term_set = NULL) {
+computeConceptRepresentation = function (model, term_set) {
   
   # Validate dictionary format and perform dictionary format conversions if necessary
   if (class(term_set) == "list") {
@@ -31,6 +31,10 @@ computeConceptRepresentation = function (model, term_set = NULL) {
   } else if (class(term_set) != "data.frame") {
     
     stop("Invalid class for term_set: Either a list or dataframe is required.")
+    
+  } else {
+    
+    dictionary = term_set
     
   }
   
@@ -58,7 +62,7 @@ computeConceptRepresentation = function (model, term_set = NULL) {
   # Loop through catgories and compute vector
   for (concept in colnames(dictionary)) {
     
-    term_weights = dictionary[, concept] / sum(dictionary[, concept])
+    term_weights = dictionary[, concept] / sum(abs(dictionary[, concept]))
     weighted_term_model = term_model * term_weights
     
     concept_mat[concept,] = apply(
