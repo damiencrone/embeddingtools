@@ -5,13 +5,13 @@
 \title{Computes the semantic similarity between a set of texts and a set of concepts
 based on their respective vector representations.}
 \usage{
-computeTextConceptSimilarity(text_representation, concept_mat)
+computeTextConceptSimilarity(text_representation, concept_vec)
 }
 \arguments{
 \item{text_representation}{a text by dimension matrix containing the vector
 representation of each text produced by computeTextVectors()}
 
-\item{concept_mat}{a concept by dimension matrix containing the vector
+\item{concept_vec}{a concept by dimension matrix containing the vector
 representation of each concept in the dictionary produced by
 computeConceptRepresentation()}
 }

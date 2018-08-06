@@ -2,7 +2,8 @@
 #' model, and the terms in the model vocabulary that define that concept(s)
 #' (similar to the approaches described in Garten et al. 2018, BRM).
 #' 
-#' @param model matrix containing model loaded using loadModel()
+#' @param model a term by dimension matrix containing model loaded using
+#'   loadModel()
 #' @param term_set a list with one element for each dictionary concept, with 
 #'   each element containing a character vector with all terms defining the 
 #'   concept, or a row/column-named dataframe with terms in the rows and weights

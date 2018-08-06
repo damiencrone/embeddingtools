@@ -6,10 +6,11 @@
 model, and the terms in the model vocabulary that define that concept(s)
 (similar to the approaches described in Garten et al. 2018, BRM).}
 \usage{
-computeConceptRepresentation(model, term_set = NULL)
+computeConceptRepresentation(model, term_set)
 }
 \arguments{
-\item{model}{matrix containing model loaded using loadModel()}
+\item{model}{a term by dimension matrix containing model loaded using
+loadModel()}
 
 \item{term_set}{a list with one element for each dictionary concept, with 
 each element containing a character vector with all terms defining the 
