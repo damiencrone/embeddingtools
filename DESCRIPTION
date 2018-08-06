@@ -2,7 +2,7 @@ Package: embeddingtools
 Title: A Package for Annotating Text Data With Pre-Trained Word Embedding Models
 Version: 0.0.0.9000
 Authors@R: person("Damien", "Crone", email = "damien.crone@gmail.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Description: A package for annotating text data with pre-trained word embedding models. Contains basic functions for tasks such as (1) loading pre-trained models, (2) computing vector representations of concepts comprising terms in a model's vocabulary, (3) computing vector representations of texts, (4) computing the similarity between texts and concepts.
 Depends: R (>= 3.4.0), text2vec
 License: GPL-3
 Encoding: UTF-8
