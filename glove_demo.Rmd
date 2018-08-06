@@ -46,6 +46,8 @@ Having loaded the word-embedding model, we can now construct vector representati
 
 To create a concept representation, the `computeConceptRepresentation()` function simply searches through the vocabulary and creates a (weighted) average of the vectors for each term. In this example, the representation for *Power* will be the average of the vectors for the terms "power", "strength", and "achievement". In this example, the terms for each value concept are taken form a previously validated lexicon (Bardi, Calogero & Mullen, 2008).
 
+As a simple descriptive exercise, we can print out the terms in the model vocabulary that are most similar to the concept representations. These will typically include some or all of the original terms in the dictionary, with the remaining terms being close semantic neighbours.
+
 ```{r}
 
 schwartz_dictionary_list = list(
@@ -65,6 +67,14 @@ schwartz_vec = computeConceptRepresentation(
   model = glove,
   term_set = schwartz_dictionary_list
 )
+
+term_concept_similarity = computeTermConceptSimilarity(
+  model = glove,
+  concept_vec = schwartz_vec
+)
+
+top_list = findTopItems(term_concept_similarity, n = 7)
+print(top_list)
 
 ```
 
@@ -105,7 +115,7 @@ news_vec = computeTextVectors(
 
 news_schwartz = computeTextConceptSimilarity(
   text_representation = news_vec,
-  concept_mat = schwartz_vec
+  concept_vec = schwartz_vec
 )
 
 ```
