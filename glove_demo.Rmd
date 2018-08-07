@@ -117,6 +117,7 @@ news_schwartz = computeTextConceptSimilarity(
   text_representation = news_vec,
   concept_vec = schwartz_vec
 )
+rownames(news_schwartz) = news_dat$headline_text
 
 ```
 
@@ -124,20 +125,15 @@ Below are the 5 article headlines with the highest semantic similarity to each p
 
 ```{r}
 
-for (concept_name in colnames(news_schwartz)) {
-  
-  top_ind = order(news_schwartz[, concept_name], decreasing = TRUE)[1:5]
-  top_headlines = news_dat$headline_text[top_ind]
-  
-  cat(
-    paste0(
-      "Concept: ", concept_name, "\n",
-      paste0("\t", top_headlines, collapse = "\n"),
-      "\n"
-    )
+top_headlines = findTopItems(concept_similarity = news_schwartz, n = 5)
+
+cat(
+  paste0(
+    "Concept: ", names(top_headlines), "\n",
+    lapply(top_headlines, function(x)paste("\t", names(x), collapse = "\n")),
+    collapse = "\n"
   )
-  
-}
+)
 
 ```
 
