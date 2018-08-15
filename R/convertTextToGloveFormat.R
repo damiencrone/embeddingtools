@@ -18,7 +18,7 @@ convertTextToGloveFormat = function (text_vec) {
   }
   
   # Handle some common special cases with apostrophies
-  text_vec = gsub(pattern = "' s", replacement = " 's ", x = text_vec)
+  text_vec = gsub(pattern = "' s ", replacement = " 's ", x = text_vec)
   text_vec = gsub(pattern = "' re ", replacement = " 're ", x = text_vec)
   text_vec = gsub(pattern = "' ve ", replacement = " 've ", x = text_vec)
   text_vec = gsub(pattern = "' ll ", replacement = " 'll ", x = text_vec)
