@@ -1,0 +1,310 @@
+---
+title: "Constructing distributed dictionaries with GloVe"
+output: html_notebook
+author: "Damien Crone"
+---
+
+A critical but often neglected step in much theory-driven language research is the construction of dictionaries that represent specific concepts. This document demonstrates how one might go about constructing a distributed dictionary ([Garten et al. 2018](http://doi.org/10.3758/s13428-017-0875-9)) for a concept of interest in a principled way. Specifically, using the concept of Danger/Threat as an example, this document will show how researchers can:
+
+1. Start with a small number of unambiguously relevant words (e.g., danger, threat)
+2. Search through a large vocabulary for relevant derivatives (e.g., endangering, threatened)
+3. Construct a distributed dictionary representation for this collection of terms
+4. Identify semantically similar terms in the vocabulary (e.g., risk, jeopardy)
+5. Add these terms to the dictionary, and repeat until no new terms are identified
+
+In the example provided below, one can start with just two words, and easily build up to a dictionary containing over 40 clearly terms, allowing the construction of a highly reliable dictionary that is unlikely to be adversely affected by the ommission of relevant words or specific semantic categories.[^1]
+
+[^1]: Westbury and Hollis ([2018](http://link.springer.com/10.3758/s13428-018-1118-4)) have shown that vector space models encode semantic category (e.g., noun vs. adjective), which implies that if one wanted to construct a dictionary representing a general concept such as Threat, and yet only included the noun form of relevant words (e.g., "threat", "danger"), this may introduce a confound where more noun-ish texts have inflated semantic similarity with the dictionary, whereas adjective-ish texts (e.g., containing words such as "dangerous") might have articifically reduced semantic similarity to the dictionary.
+
+# How to use this document
+
+To make the document more readable (if you don't want to dig through code), in the top-right corner, you can click on _**Code**_, and select _**Hide All Code**_, and just limit the displayed content to any outputs and descriptive text.
+
+To run the code, you will need:
+
+1. The `embeddingtools` library, available from GitHub (code to download it is included below and commented out)
+2. A pre-trained word embedding model (e.g., GloVe, available from available from https://nlp.stanford.edu/projects/glove/)
+3. The validation dataset, *A Million News Headlines* (Kulkarni, 2017), available from https://www.kaggle.com/therohk/million-headlines/
+
+```{r}
+
+# Load embeddingtools library
+# install.packages("devtools")
+# library(devtools)
+# install_github("damiencrone/embeddingtools")
+library(embeddingtools)
+
+max_vocab_size = 250000
+
+# Model obtained from http://nlp.stanford.edu/data/glove.42B.300d.zip
+# Note to reduce resource demands, you may wish to use a model with lower
+# dimensionality and/or reduce the vocabulary size.
+glove = loadModel(
+  file = "~/Desktop/glove_models/glove.42B.300d.txt",
+  max_vocab_size = max_vocab_size
+)
+
+```
+
+# Dictionary construction
+
+## Finding derivatives
+
+In the first step, we simply begin with two words that are obviously relevant to our concept of interest: "threat" and "danger". Because there are various derivatves of these words that are similarly relevant to the concept of Threat, we use the `findWildcards` to locate these. The `findWildcards` function simply searches through the model vocabulary for words that have prefixes or suffixes attached to the root word. The identified words are printed out below.
+
+```{r}
+
+starting_words = c("*danger*", "*threat*")
+
+candidate_words = findWildcards(
+  x = starting_words,
+  model = glove
+)
+
+print(candidate_words)
+
+```
+
+Most of these words are relevant, but there are a few that we wouldn't want to include (e.g., ["dangermouse"](https://en.wikipedia.org/wiki/Danger_Mouse_(1981_TV_series) is quite clearly not what we're looking for).[^2] To proceed, we simply list the words we want to omit, leaving the set of words printed out below. We use these words to construct a distributed dictionary for the next step in the process.
+
+[^2]: This neatly demonstrates the dangers of the unscrutinised use of wildcards, a problem that occurs not only in this example, but also afflicts currently used LIWC dictionaries.
+
+```{r}
+
+mismatches = c(
+  "dangerfield", "hardanger", "dangermouse", "non-threatening", "dual-threat",
+  "non-life-threatening", "unthreatening"
+)
+
+threat_words_step_1 = unlist(candidate_words, use.names = FALSE)
+threat_words_step_1 = threat_words_step_1[!threat_words_step_1 %in% mismatches]
+
+print(threat_words_step_1)
+
+```
+
+## Finding semantically similar words
+
+Having identified all the relevant derivatives of the words "threat" and "danger", we next want to identify semantically similar words. To this end, we construct a distributed dictionary using the 19 words ideitifed above, and locate the most semantically similar words in the GloVe vocabulary. These words are printed below.
+
+```{r}
+
+dictionary_list = list(
+  Threat = threat_words_step_1
+)
+
+dictionary_vec = computeConceptRepresentation(
+  model = glove,
+  term_set = dictionary_list
+)
+
+term_similarity = computeTermConceptSimilarity(
+  model = glove,
+  concept_vec = dictionary_vec
+)
+
+top_terms = findTopItems(
+  concept_similarity = term_similarity,
+  n = 25,
+  exclude = dictionary_list
+)
+
+print(top_terms)
+
+```
+
+Many of the words identified above seem conceptually related, though most of them do not *specifically* refer to Threat. However, there are two particualr words that do:[^3] "jeopardize" and "risk". To expand the dictionary, we thus repeat the steps demonstrated above: searching for words sharing the same root (printed below), re-constructing the dictionary, and then searching for new semantically related words.
+
+[^3]: In the judgement of the author, at least.
+
+```{r}
+
+new_words = c("*jeopard*", "*risk*")
+
+new_candidate_words = findWildcards(
+  x = new_words,
+  model = glove
+)
+
+print(new_candidate_words)
+
+```
+
+After inspecting the derivatives of "jeopardy" and "risk" (and varaious irrelevant words returned by the wildcard search), we identified a set of 10 new words to add to the dictionary, these are printed below, along with the words from the previous step (giving a total of 37 words).
+
+```{r}
+
+additional_words = c(
+  new_candidate_words$`*jeopard*`,
+  "risk", "risks", "risky", "high-risk", "risking", "at-risk", "risked",
+  "riskier", "risk-taking", "riskiest"
+)
+
+threat_words_step_2 = c(
+  threat_words_step_1,
+  additional_words
+)
+
+print(threat_words_step_2)
+
+```
+
+After re-constructing the dictionary, we once again search through the model vocabulary for semantically related words. These are printed below.
+
+```{r}
+
+dictionary_list = list(
+  Threat = threat_words_step_2
+)
+
+dictionary_vec = computeConceptRepresentation(
+  model = glove,
+  term_set = dictionary_list
+)
+
+term_similarity = computeTermConceptSimilarity(
+  model = glove,
+  concept_vec = dictionary_vec
+)
+
+top_terms = findTopItems(
+  concept_similarity = term_similarity,
+  n = 25,
+  exclude = dictionary_list
+)
+
+print(top_terms)
+
+```
+
+Once again, we have identified a clearly relevant word ("imperil") that wasn't identified in the previous step, so we repeat the procedure performed above, locating relevant derivatives of the word "peril" (printed below), and reconstructing the dictionary.
+
+```{r}
+
+new_words = c("*peril*")
+
+new_candidate_words = findWildcards(
+  x = new_words,
+  model = glove
+)
+
+print(new_candidate_words)
+
+```
+
+The third iteration of the dictionary contains the 45 words listed below.
+
+```{r}
+
+additional_words = c(
+  "peril", "perils", "perilous", "perilously", "imperiled", "imperil", "imperils"
+)
+
+threat_words_step_3 = c(
+  threat_words_step_2,
+  additional_words
+)
+
+print(threat_words_step_3)
+
+```
+
+After re-constructing the dictionary, we once again search the vocabulary for related terms. These are printed below.
+
+```{r}
+
+dictionary_list = list(
+  Threat = threat_words_step_3
+)
+
+dictionary_vec = computeConceptRepresentation(
+  model = glove,
+  term_set = dictionary_list
+)
+
+term_similarity = computeTermConceptSimilarity(
+  model = glove,
+  concept_vec = dictionary_vec
+)
+
+top_terms = findTopItems(
+  concept_similarity = term_similarity,
+  n = 25,
+  exclude = dictionary_list
+)
+
+print(top_terms)
+
+```
+
+Promisingly, many of the closest words are clearly conceptually related to the notion of Threat, however one could argue that none of them *specifically* refer to Threat, thus we decide at this point that our dictionary is complete.
+
+# Validation
+
+To test the ability of the concept repesentations to measure the Threat content of texts, we computed the semantic similarity of the Threat concept vector the the vector representations of texts in a corpus of over one million news headlines from the Australian Broadcasting Corporation ([Kulkarni, 2017](https://www.kaggle.com/therohk/million-headlines/)). For simplicity, we limit our analyses to a random sample of `r n_articles_to_sample` headlines.
+
+```{r}
+
+# Dataset obtained from https://www.kaggle.com/therohk/million-headlines/
+news_dat = read.csv(
+  file = "~/Desktop/glove_models/abcnews-date-text.csv",
+  stringsAsFactors = FALSE
+)
+
+news_dat$word_count = stringr::str_count(
+  string = news_dat$headline_text,
+  pattern = "\\S+"
+)
+
+# Remove texts with fewer than 4 words
+news_dat = news_dat[news_dat$word_count >= 4,]
+
+# For simplicity, sample the validation dataset
+set.seed(1234)
+n_articles_to_sample = 10000
+sample_ind = sample(x = 1:nrow(news_dat), size = n_articles_to_sample)
+news_dat = news_dat[sample_ind,]
+
+news_dat$headline_text_processed = removeWhiteSpace(
+  convertTextToGloveFormat(news_dat$headline_text)
+)
+
+news_vec = computeTextVectors(
+  text_vec = news_dat$headline_text_processed,
+  model = glove
+)
+
+news_threat = computeTextConceptSimilarity(
+  text_representation = news_vec,
+  concept_vec = dictionary_vec
+)
+rownames(news_threat) = news_dat$headline_text
+
+```
+
+Below are the 10 article headlines whose vectors have the highest semantic similarity to the Threat vector representation. All results seem clearly relevant, and notably, some do not even contain any words in the dictionary (e.g., "roberts intervention in syria could have untold repercussions")
+
+```{r}
+
+top_headlines = findTopItems(
+  concept_similarity = news_threat,
+  n = 10
+)
+
+print(
+  data.frame(
+    headline = names(top_headlines$Threat),
+    similarity = top_headlines$Threat,
+    row.names = NULL
+  )
+)
+
+```
+
+# References
+
+Garten, J., Hoover, J., Johnson, K. M., Boghrati, R., Iskiwitch, C., & Dehghani, M. (2018). Dictionaries and distributions: Combining expert knowledge and large scale textual data content analysis. Behavior Research Methods, 50(1), 344–361. http://doi.org/10.3758/s13428-017-0875-9
+
+Kulkarni, R. (2017). A Million News Headlines. http://doi.org/10.7910/DVN/SYBGZL. Retrieved from: https://www.kaggle.com/therohk/million-headlines/
+
+Westbury, C., & Hollis, G. (2018). Conceptualizing syntactic categories as semantic categories: Unifying part-of-speech identification and semantics using co-occurrence vector averaging. Behavior Research Methods. http://doi.org/10.3758/s13428-018-1118-4

@@ -4,7 +4,7 @@ output: html_notebook
 author: "Damien Crone"
 ---
  
-This document describes a test of implementing the word embedding-based measures to describe the semantic content of texts (essentially using a distributed dictionary approach; Garten et al. 2018). Specifically, we use semantic representations of the Schwartz Values taxonomy of personal values, using a pre-trained word embedding model (GloVe), and validating the vector representations using a subsample of a corpus of news headlines.
+This document describes a test of implementing the word embedding-based measures to describe the semantic content of texts (essentially using a distributed dictionary approach; [Garten et al. 2018](http://doi.org/10.3758/s13428-017-0875-9)). Specifically, we use semantic representations of the Schwartz Values taxonomy of personal values, using a pre-trained word embedding model (GloVe), and validating the vector representations using a subsample of a corpus of news headlines.
 
 # How to use this document
 
@@ -44,7 +44,7 @@ glove = loadModel(
 
 Having loaded the word-embedding model, we can now construct vector representations of concepts of interest, using the `computeConceptRepresentation()` function. This can be done in one of two ways: First, as demonstrated here, one can create a list with one element for each concept in the dictionary, with each concept element containing a character vector of the words that will be used to define the concept. An assumption of the first approach is that each term is equally relevant to the concept. A second approach, allowing different terms to have different weights, is to input a table weights with terms in the rows and concepts in the columns. (A list provided as input will ultimately be converted to a table with all terms having equal weight.)
 
-To create a concept representation, the `computeConceptRepresentation()` function simply searches through the vocabulary and creates a (weighted) average of the vectors for each term. In this example, the representation for *Power* will be the average of the vectors for the terms "power", "strength", and "achievement". In this example, the terms for each value concept are taken form a previously validated lexicon (Bardi, Calogero & Mullen, 2008).
+To create a concept representation, the `computeConceptRepresentation()` function simply searches through the vocabulary and creates a (weighted) average of the vectors for each term. In this example, the representation for *Power* will be the average of the vectors for the terms "power", "strength", and "achievement". In this example, the terms for each value concept are taken form a previously validated lexicon ([Bardi, Calogero & Mullen, 2008](http://doi.org/10.1037/0021-9010.93.3.483)).
 
 As a simple descriptive exercise, we can print out the terms in the model vocabulary that are most similar to the concept representations. These will typically include some or all of the original terms in the dictionary, with the remaining terms being close semantic neighbours.
 
@@ -80,7 +80,7 @@ print(top_list)
 
 # Validation data
 
-To test the ability of the concept repesentations to describe the semantic content of texts, we computed the semantic similarity of each concept vector the the vector representations of texts in a corpus of over one million news headlines from the Australian Broadcasting Corporation (Kulkarni, 2017). For simplicity, we limit our analyses to a random sample or `r n_articles_to_sample` headlines.
+To test the ability of the concept repesentations to describe the semantic content of texts, we computed the semantic similarity of each concept vector the the vector representations of texts in a corpus of over one million news headlines from the Australian Broadcasting Corporation ([Kulkarni, 2017](https://www.kaggle.com/therohk/million-headlines/)). For simplicity, we limit our analyses to a random sample of `r n_articles_to_sample` headlines.
 
 ```{r}
 
