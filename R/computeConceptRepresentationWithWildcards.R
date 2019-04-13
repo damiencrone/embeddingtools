@@ -56,4 +56,6 @@ computeConceptRepresentationWithWildcards = function (model, term_set, remove_mi
     concept_mat[concept,] = colMeans(root_vec[root_names, , drop = FALSE])
   }
   
+  return(concept_mat)
+  
 }
